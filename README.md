@@ -53,7 +53,98 @@ JOIN MEMBER M ON T.ID = M.TEAM_ID
 * JPQL에서 역방향으로 탐색할 일이 많다.
 * 단방향 맵핑을 잘하고 양방향 맵핑은 필요할 때 추가해도 된다. (테이블에 영향이 없다.)
 
+---
 
+## JPA 내부 구조
 
+### 영속성 컨텍스트 (PersistenceContext)
+* JPA를 이해하는데 가장 중요한 용어
+* ```Entity를 영구 저장하는 환경```이라는 뜻
+* EntityManager.persist(entity);
+* 영속성 컨텍스트는 논리적 개념 (눈에 보이지 않는다.)
+* EntityManager를 통해 영속성 컨텍스트에 접근한다.
 
+### Entity LifeCycle
+**비영속(new/transient): 영속성 컨텍스트와 전혀 관계가 없는 상태**
+```java
+Member member = new Member();
+member.setId(1L);
+member.setName("회원1");
+```
 
+**영속(managed): 영속성 컨텍스트에 저장된 상태**
+```java
+Member member = new Member();
+member.setId(1L);
+member.setName("회원1");
+
+EntityManager em = emf.createEntityManager();
+em.getTransaction().begin();
+
+em.persist(member);
+```
+  
+**준영속(detached): 영속성 컨텍스트에 저장되었다가 분리된 상태**
+```java
+em.detach(member);  // 특정 엔티티만 준영속 상태로 전환
+또는
+em.clear(); // 영속성 컨텍스트 초기화
+또는
+em.close(); // 영속성 컨텍스트 종료
+```
+  
+**삭제(removed): 삭제된 상태**
+```java
+em.remove(member);
+```
+
+---
+
+### 영속성 컨텍스트의 이점
+**1차 캐시 & 동일성(identity) 보장**<br>
+반복 가능한 읽기(REPEATABLE READ) 등급의 트랙잭션 격리 수준을 DB가 아닌 애플리케이션단에서 제공
+```java
+Member a = em.find(Member.class, 1L);
+Member b = em.find(Member.class, 2L);
+System.out.println(a == b); // true
+```
+
+**트랜잭션을 지원하는 쓰기 지연 (transactional write-behind)**
+```java
+EntityManager em = emf.createEntityManager();
+EntityTransaction transaction = em.getTransaction();
+transaction.begin();
+
+em.persist(a);
+em.persist(b);
+// 여기까지는 INSERT 쿼리를 DB에 보내지 않는다.
+
+transaction.commit();   // 커밋하는 순간 DB에 쿼리를 보낸다.
+```
+
+**변경 감지 (Dirty Checking)**
+```java
+EntityManager em = emf.createEntityManager();
+EntityTransaction transaction = em.getTransaction();
+transaction.begin();
+
+Member a = em.find(Member.class, 1L);
+a.setName("Hardy");
+a.setAge(30);
+
+// em.update(a); 이런 코드가 없어도 된다.
+
+transaction.commit();
+// 1차 캐시를 만들 때 만들어둔 스냅샷과 비교하여 변경된 부분의 UPDATE 쿼리를 수행한다.
+```
+
+**지연 로딩 (Lazy Loading)**
+
+---
+
+## 프록시와 지연 로딩
+* 가급적 지연 로딩을 사용하자.
+* 즉시 로딩을 적용하면 예상하지 못한 쿼리가 발생할 수 있다.
+* 즉시 로딩은 JPQL에서 N+1 문제를 발생시킨다.
+* ```@ManyToOne, @OneToOne```은 default가 즉시 로딩이다.
+* ```@OneToMany, @ManyToMany```는 default가 지연 로딩이다.

@@ -33,7 +33,7 @@ public class Main {
         try {
             Team teamA = new Team();
             teamA.setName("TeamA");
-            em.persist(teamA);
+            em.persist(teamA);  // 1차 캐시에 저장됨
 
             Member member = new Member();
             member.setName("Hardy");
@@ -42,12 +42,12 @@ public class Main {
             member.setRegDate(new Date());
             member.setCreateDateTime(LocalDateTime.now());
             member.setTeam(teamA);
-            em.persist(member);
+            em.persist(member); // 1차 캐시에 저장됨
 
             em.flush();
             em.clear();
 
-            Member findMember = em.find(Member.class, member.getId());
+            Member findMember = em.find(Member.class, member.getId());  // 1차 캐시에서 조회
             Team findTeam = findMember.getTeam();
             findTeam.getName();
 
