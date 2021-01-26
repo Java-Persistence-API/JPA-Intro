@@ -10,6 +10,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 설명 : N/A
@@ -30,9 +31,9 @@ public class Main {
         tx.begin();
 
         try {
-            Team team = new Team();
-            team.setName("TeamA");
-            em.persist(team);
+            Team teamA = new Team();
+            teamA.setName("TeamA");
+            em.persist(teamA);
 
             Member member = new Member();
             member.setName("Hardy");
@@ -40,17 +41,20 @@ public class Main {
             member.setMemberType(MemberType.ADMIN);
             member.setRegDate(new Date());
             member.setCreateDateTime(LocalDateTime.now());
-            member.setTeam(team);
+            member.setTeam(teamA);
             em.persist(member);
 
-//            em.flush();
-//            em.clear();
+            em.flush();
+            em.clear();
 
             Member findMember = em.find(Member.class, member.getId());
             Team findTeam = findMember.getTeam();
+            findTeam.getName();
 
-            team.setName("TeamB");
-            em.persist(team);
+            List<Member> members = findTeam.getMembers();
+            for (Member m : members) {
+                System.out.println("m = " + m);
+            }
 
             tx.commit();
 

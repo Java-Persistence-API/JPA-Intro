@@ -2,6 +2,7 @@ package hellojpa.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,6 +25,7 @@ import java.util.Date;
  * @author Minkuk Jo / http://minkuk-jo.com
  * @since 2021. 01. 26.
  */
+@ToString
 @Getter
 @Setter
 @Entity
@@ -32,7 +34,7 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "username", nullable = false, length = 20)
+    @Column(name = "USERNAME", nullable = false, length = 20)
     private String name;
 
     private int age;
@@ -46,6 +48,6 @@ public class Member {
     private LocalDateTime createDateTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id")
+    @JoinColumn(name = "TEAM_ID")
     private Team team;
 }
