@@ -2,6 +2,7 @@ package hellojpa;
 
 import hellojpa.entity.Member;
 import hellojpa.entity.MemberType;
+import hellojpa.entity.Team;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -29,15 +30,28 @@ public class Main {
         tx.begin();
 
         try {
+            Team team = new Team();
+            team.setName("TeamA");
+            em.persist(team);
+
             Member member = new Member();
-//            member.setId(1L);
             member.setName("Hardy");
             member.setAge(30);
             member.setMemberType(MemberType.ADMIN);
             member.setRegDate(new Date());
             member.setCreateDateTime(LocalDateTime.now());
-
+            member.setTeam(team);
             em.persist(member);
+
+//            em.flush();
+//            em.clear();
+
+            Member findMember = em.find(Member.class, member.getId());
+            Team findTeam = findMember.getTeam();
+
+            team.setName("TeamB");
+            em.persist(team);
+
             tx.commit();
 
         } catch (Exception e) {
