@@ -148,3 +148,34 @@ transaction.commit();
 * 즉시 로딩은 JPQL에서 N+1 문제를 발생시킨다.
 * ```@ManyToOne, @OneToOne```은 default가 즉시 로딩이다.
 * ```@OneToMany, @ManyToMany```는 default가 지연 로딩이다.
+
+---
+
+## JPA와 객체지향쿼리
+
+### JPQL
+* SQL을 추상화한 JPQL이라는 객체 지향 쿼리 언어
+* SQL과 유사한 문법의 SELECT, FROM, WHERE, GROUP BY, HAVING, JOIN 등 지원
+* JPQL은 Entity 객체를 대상으로 쿼리 (SQL은 DB 테이블을 대상으로 쿼리)
+```java
+String jpql = "select m from Member m where m.age > 18";
+List<Member> result = em.createQuery(jpql, Member.class).getResultList();
+```
+
+**페이징 쿼리**
+```java
+String jpql = "select m from Member m order by m.name desc";
+List<Member> result = em.createQuery(jpql, Member.class)
+        .setFirstResult(10)
+        .setMaxResults(20)
+        .getResultList();
+```
+
+**FETCH JOIN**<br>
+* Entity 객체 그래프를 한번에 조회하는 방법
+* 별칭을 사용할 수 없다.
+```sql
+JPQL: select m from Member m join fetch m.team
+SQL: select M.*, T.* from MEMBER T inner join TEAM T on M.TEAM_ID = T.ID
+```
+
